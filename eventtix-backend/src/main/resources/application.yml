@@ -1,0 +1,87 @@
+spring:
+  application:
+    name: eventtix
+  profiles:
+    active: ${SPRING_PROFILES_ACTIVE:dev}
+  datasource:
+    url: ${DATABASE_URL:jdbc:postgresql://localhost:5432/eventtix}
+    username: ${DATABASE_USERNAME:eventtix}
+    password: ${DATABASE_PASSWORD:}
+    hikari:
+      maximum-pool-size: ${DB_POOL_SIZE:20}
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    open-in-view: false
+    properties:
+      hibernate:
+        jdbc:
+          time_zone: UTC
+  flyway:
+    enabled: true
+    locations: classpath:db/migration
+  data:
+    redis:
+      host: ${REDIS_HOST:localhost}
+      port: ${REDIS_PORT:6379}
+      password: ${REDIS_PASSWORD:}
+  mail:
+    host: ${MAIL_HOST:}
+    port: ${MAIL_PORT:587}
+    username: ${MAIL_USERNAME:}
+    password: ${MAIL_PASSWORD:}
+    properties:
+      mail:
+        smtp:
+          auth: ${MAIL_AUTH:true}
+          starttls:
+            enable: ${MAIL_STARTTLS:true}
+
+server:
+  port: ${PORT:8080}
+  error:
+    include-message: always
+
+jwt:
+  secret: ${JWT_SECRET:change-me-in-production-to-a-long-random-string-32chars+}
+  access-token-minutes: 15
+  refresh-token-days: 14
+
+qr:
+  hmac-secret: ${QR_HMAC_SECRET:change-me-qr-hmac-secret-for-prod-min-32-chars}
+
+razorpay:
+  key-id: ${RAZORPAY_KEY_ID:}
+  key-secret: ${RAZORPAY_KEY_SECRET:}
+
+stripe:
+  secret-key: ${STRIPE_SECRET_KEY:}
+  webhook-secret: ${STRIPE_WEBHOOK_SECRET:}
+
+rate-limit:
+  checkout-per-minute: ${RATE_LIMIT_CHECKOUT:20}
+  auth-per-minute: ${RATE_LIMIT_AUTH:10}
+  global-per-minute: ${RATE_LIMIT_GLOBAL:100}
+  scan-per-minute: ${RATE_LIMIT_SCAN:60}
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,prometheus,metrics
+  endpoint:
+    health:
+      show-details: when_authorized
+      probes:
+        enabled: true
+
+cors:
+  allowed-origins: ${CORS_ALLOWED_ORIGINS:http://localhost:3000}
+
+cookie:
+  secure: ${COOKIE_SECURE:false}
+
+logging:
+  level:
+    root: INFO
+    com.eventtix: INFO
