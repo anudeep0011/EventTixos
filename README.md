@@ -1,2 +1,3 @@
 # EventTixos
-EventTix — Production-ready event discovery &amp; ticketing platform (Spring Boot + Next.js + Expo). Eventbrite/Ticket Tailor style.
+
+See full README in subsequent commits. Production-ready event discovery & ticketing (Spring Boot + Next.js + Expo).
