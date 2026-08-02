@@ -1,7 +1,3 @@
 {
-  "$schema": "https://openapi.vercel.sh/vercel.json",
-  "framework": "nextjs",
-  "installCommand": "cd eventtix-frontend && npm install",
-  "buildCommand": "cd eventtix-frontend && npm run build",
-  "outputDirectory": "eventtix-frontend/.next"
+  "$schema": "https://openapi.vercel.sh/vercel.json"
 }
