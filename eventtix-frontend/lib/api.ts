@@ -1,11 +1,7 @@
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080/api';
 
-export async function api<T>(
-  path: string,
-  options: RequestInit = {}
-): Promise<T> {
+export async function api<T>(path: string, options: RequestInit = {}): Promise<T> {
   const token = typeof window !== 'undefined' ? localStorage.getItem('accessToken') : null;
-
   const res = await fetch(`${API_BASE}${path}`, {
     ...options,
     headers: {
@@ -14,12 +10,10 @@ export async function api<T>(
       ...options.headers,
     },
   });
-
   if (!res.ok) {
     const err = await res.json().catch(() => ({ message: res.statusText }));
     throw new Error(err.message || `HTTP ${res.status}`);
   }
-
   return res.json();
 }
 
@@ -47,15 +41,15 @@ export const events = {
   dashboard: (id: string) => api(`/organizer/events/${id}/dashboard`),
 };
 
-export const categories = {
-  list: () => api('/categories'),
-};
+export const categories = { list: () => api('/categories') };
 
 export const checkout = {
   hold: (body: { tierId: string; quantity: number; sessionId: string }) =>
     api('/checkout/hold', { method: 'POST', body: JSON.stringify(body) }),
   createIntent: (body: any) =>
     api('/checkout/create-payment-intent', { method: 'POST', body: JSON.stringify(body) }),
+  confirmMock: (body: { orderId: string }) =>
+    api('/checkout/confirm-mock', { method: 'POST', body: JSON.stringify(body) }),
 };
 
 export const checkin = {
