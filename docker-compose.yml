@@ -1,15 +1,30 @@
 version: '3.9'
+
+# SECURITY: No default passwords. Copy .env.example → .env and set strong values.
+# Required: POSTGRES_PASSWORD, REDIS_PASSWORD, JWT_SECRET, QR_HMAC_SECRET
+
 services:
   postgres:
     image: postgres:16-alpine
     environment:
       POSTGRES_DB: eventtix
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
-    ports: ["5432:5432"]
-    volumes: [pgdata:/var/lib/postgresql/data]
+      POSTGRES_USER: ${POSTGRES_USER:-eventtix}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD in .env}
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    restart: unless-stopped
+
   redis:
     image: redis:7-alpine
-    ports: ["6379:6379"]
+    command: redis-server --appendonly yes --maxmemory 256mb --maxmemory-policy allkeys-lru --requirepass ${REDIS_PASSWORD:?Set REDIS_PASSWORD in .env}
+    ports:
+      - "6379:6379"
+    volumes:
+      - redisdata:/data
+    restart: unless-stopped
+
 volumes:
   pgdata:
+  redisdata:

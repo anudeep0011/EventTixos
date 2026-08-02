@@ -1,0 +1,14 @@
+.env
+.env.local
+.env.*.local
+*.pem
+target/
+.next/
+node_modules/
+dist/
+.idea/
+*.iml
+.vscode/
+*.log
+.DS_Store
+eventtix-scanner/.expo/
