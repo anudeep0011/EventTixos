@@ -12,6 +12,7 @@ export default function CheckoutPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [expiresIn, setExpiresIn] = useState(0);
+  const [done, setDone] = useState<any>(null);
 
   useEffect(() => {
     const raw = sessionStorage.getItem('checkout');
@@ -21,10 +22,7 @@ export default function CheckoutPage() {
     const tick = () => {
       const left = Math.max(0, Math.floor((new Date(parsed.expiresAt).getTime() - Date.now()) / 1000));
       setExpiresIn(left);
-      if (left <= 0) {
-        sessionStorage.removeItem('checkout');
-        setError('Hold expired. Please try again.');
-      }
+      if (left <= 0) { sessionStorage.removeItem('checkout'); setError('Hold expired. Please try again.'); }
     };
     tick();
     const id = setInterval(tick, 1000);
@@ -37,15 +35,18 @@ export default function CheckoutPage() {
     setLoading(true);
     setError('');
     try {
-      const res: any = await checkout.createIntent({
-        tierId: data.tier.id,
-        quantity: data.quantity,
-        holdKey: data.holdKey,
-        guestEmail: email,
-        guestName: name,
+      const intent: any = await checkout.createIntent({
+        tierId: data.tier.id, quantity: data.quantity, holdKey: data.holdKey,
+        guestEmail: email, guestName: name,
       });
+      if (intent.paymentProvider === 'MOCK' || !intent.clientSecret?.startsWith('pi_')) {
+        const confirmed: any = await checkout.confirmMock({ orderId: intent.orderId });
+        sessionStorage.removeItem('checkout');
+        setDone(confirmed);
+        return;
+      }
       sessionStorage.removeItem('checkout');
-      alert(`Payment intent created! Order: ${res.orderId}\nIn production Razorpay/Stripe checkout opens here.`);
+      alert(`Payment intent ${intent.providerPaymentId} created.`);
       router.push('/my-tickets');
     } catch (err: any) {
       setError(err.message || 'Payment failed');
@@ -54,15 +55,24 @@ export default function CheckoutPage() {
     }
   };
 
+  if (done) {
+    return (
+      <div className="max-w-md mx-auto text-center py-12">
+        <div className="text-4xl mb-4">✓</div>
+        <h1 className="text-2xl font-bold mb-2">Tickets confirmed</h1>
+        <p className="text-gray-600 mb-4">Order {done.orderId} — {done.ticketCount} ticket(s) issued.</p>
+        <a href="/my-tickets" className="text-indigo-600 hover:underline">View my tickets →</a>
+      </div>
+    );
+  }
+
   if (!data) return <p className="text-center py-12">Loading checkout…</p>;
   const total = ((data.tier.priceCents * data.quantity) / 100).toFixed(0);
 
   return (
     <div className="max-w-md mx-auto">
       <h1 className="text-2xl font-bold mb-2">Checkout</h1>
-      <p className="text-sm text-amber-600 mb-6">
-        Hold expires in {Math.floor(expiresIn / 60)}:{String(expiresIn % 60).padStart(2, '0')}
-      </p>
+      <p className="text-sm text-amber-600 mb-6">Hold expires in {Math.floor(expiresIn / 60)}:{String(expiresIn % 60).padStart(2, '0')}</p>
       <div className="bg-white border rounded-xl p-5 mb-6">
         <h2 className="font-medium">{data.event?.title}</h2>
         <p className="text-sm text-gray-500 mt-1">{data.tier.name} × {data.quantity}</p>
@@ -72,18 +82,17 @@ export default function CheckoutPage() {
         {error && <p className="text-red-600 text-sm">{error}</p>}
         <div>
           <label className="block text-sm mb-1">Name</label>
-          <input required value={name} onChange={(e) => setName(e.target.value)}
-            className="w-full border rounded-lg px-3 py-2" />
+          <input required value={name} onChange={(e) => setName(e.target.value)} className="w-full border rounded-lg px-3 py-2" />
         </div>
         <div>
           <label className="block text-sm mb-1">Email (for tickets)</label>
-          <input type="email" required value={email} onChange={(e) => setEmail(e.target.value)}
-            className="w-full border rounded-lg px-3 py-2" />
+          <input type="email" required value={email} onChange={(e) => setEmail(e.target.value)} className="w-full border rounded-lg px-3 py-2" />
         </div>
         <button type="submit" disabled={loading || expiresIn <= 0}
           className="w-full bg-indigo-600 text-white py-2.5 rounded-lg font-medium hover:bg-indigo-700 disabled:opacity-50">
-          {loading ? 'Processing…' : `Pay ₹${total}`}
+          {loading ? 'Processing…' : `Confirm ₹${total}`}
         </button>
+        <p className="text-xs text-gray-400 text-center">Demo mode confirms instantly without a live payment provider.</p>
       </form>
     </div>
   );
