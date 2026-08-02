@@ -1,0 +1,31 @@
+spring:
+  jpa:
+    show-sql: false
+    hibernate:
+      ddl-auto: validate
+  flyway:
+    enabled: true
+
+server:
+  error:
+    include-message: never
+    include-stacktrace: never
+
+logging:
+  level:
+    root: WARN
+    com.eventtix: INFO
+  pattern:
+    console: "%d{ISO8601} [%X{correlationId}] %-5level %logger{36} - %msg%n"
+
+management:
+  endpoint:
+    health:
+      show-details: never
+  endpoints:
+    web:
+      exposure:
+        include: health,info,prometheus
+
+cookie:
+  secure: true
